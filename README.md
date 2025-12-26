@@ -10,5 +10,5 @@ It is recommended to follow this workflow if you plan to use this script:
   - E.g using 7-zip to import them manually instead of doing it in-app.
 - Add the URLs of **all** the mods you are going to be using the script on to `load.txt`, comma separated.
 - Run the script in the highest-level directory that contains all the mod folders.
-  - Make sure that the mod folders are named EXACTLY as they are listed on the mod page! This includes file extensions! If the mod page lists `modname_v1.1.zip`, your folder MUST be named `modname_v1.1.zip`! 7-Zip can do this easily with a `*` pattern.
+  - Make sure that the mod folders are named EXACTLY as they are listed on the mod page! This includes file extensions! If the mod page lists `modname_v1.1.zip`, your folder MUST be named `modname_v1.1.zip`! ~7-Zip can do this easily with a `*` pattern.~ Never mind, 7-Zip can't do this very easily. There is now a python file that will 7-Zip extract all of the archives in your working directory with their proper names. (NOTE: This will do every single archive in your working directory! Don't run it in `\Downloads` or bad things will happen.)
 - Troubleshoot if necessary based on the logs.
