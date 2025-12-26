@@ -89,7 +89,6 @@ def main() -> None:
         for fname in mod_item.filenames:
             if fname in folder_map:
                 match_folder = folder_map[fname]
-                break
 
         if match_folder:
             print(f"Match found: {mod_item.modname} -> {match_folder.name}")
