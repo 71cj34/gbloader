@@ -86,43 +86,52 @@ def main() -> None:
 
         # check if one of the potential filenames in this mod_item matches the real filename
         match_folder: Optional[pathlib.Path] = None
+        found_any = False
         for fname in mod_item.filenames:
             if fname in folder_map:
                 match_folder = folder_map[fname]
+                found_any = True
 
-        if match_folder:
-            print(f"Match found: {mod_item.modname} -> {match_folder.name}")
-            config_path = match_folder / ".JASM_ModConfig.json"
+                print(f"Match found: {mod_item.modname} -> {match_folder.name}")
+                config_path = match_folder / ".JASM_ModConfig.json"
 
-            # 1. update json config
-            try:
-                config_data = {}
-                if config_path.exists():
-                    with open(config_path, "r", encoding="utf-8") as f:
-                        config_data = json.load(f)
+                # 1. update json config
+                try:
+                    config_data = {}
+                    if config_path.exists():
+                        with open(config_path, "r", encoding="utf-8") as f:
+                            config_data = json.load(f)
 
-                config_data["CustomName"] = mod_item.modname
-                config_data["Author"] = mod_item.subname
-                config_data["ModUrl"] = f"https://gamebanana.com/mods/{mod_item.id}"
-                config_data["ImagePath"] = ".JASM_Cover.jpg"
+                    config_data["CustomName"] = mod_item.modname
+                    config_data["Author"] = mod_item.subname
+                    config_data["ModUrl"] = f"https://gamebanana.com/mods/{mod_item.id}"
+                    config_data["ImagePath"] = ".JASM_Cover.jpg"
 
-                with open(config_path, "w", encoding="utf-8") as f:
-                    json.dump(config_data, f, indent=4)
-            except Exception as e:
-                print(f"Failed to update config for {match_folder.name}: {e}")
+                    with open(config_path, "w", encoding="utf-8") as f:
+                        json.dump(config_data, f, indent=4)
+                except Exception as e:
+                    print(f"Failed to update config for {match_folder.name}: {e}")
 
-            # 2. add image
-            img_path = match_folder / ".JASM_Cover.jpg"
-            try:
-                img_res = requests.get(mod_item.photourl, stream=True, timeout=15)
-                img_res.raise_for_status()
-                with open(img_path, "wb") as f:
-                    for chunk in img_res.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                print(f"Image saved: {img_path}")
-            except Exception as e:
-                print(f"Failed to download image: {e}")
-        else:
+                # 2. add image
+                img_path = match_folder / ".JASM_Cover.jpg"
+                if (
+                    not img_path.exists()
+                ):  # Optional: avoid re-downloading for same mod id
+                    try:
+                        img_res = requests.get(
+                            mod_item.photourl, stream=True, timeout=15
+                        )
+                        img_res.raise_for_status()
+                        with open(img_path, "wb") as f:
+                            for chunk in img_res.iter_content(chunk_size=8192):
+                                f.write(chunk)
+                        print(f"Image saved: {img_path}")
+                    except Exception as e:
+                        print(f"Failed to download image: {e}")
+                else:
+                    print(f"Image already exists for {match_folder.name}")
+
+        if not found_any:
             print(
                 f"No local folder match found for {mod_item.modname} (ID: {mod_item.id})"
             )
