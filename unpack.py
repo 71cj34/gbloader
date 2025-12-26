@@ -16,7 +16,7 @@ archive_extensions = {".7z", ".zip", ".rar", ".tar", ".gz", ".bz2", ".xz"}
 for item in current_dir.iterdir():
     if item.is_file() and item.suffix.lower() in archive_extensions:
         archive_name = item.name
-        output_folder = item.stem
+        output_folder = item.name
 
         print(f"Extracting '{archive_name}' to folder '{output_folder}'...")
 
