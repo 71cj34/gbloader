@@ -21,7 +21,7 @@ def getData(url: str) -> Optional[modData]:
     if not url:
         return None
 
-    mod_id: str = url.strip().split("/")[-1]
+    mod_id = url.strip().rstrip("/").split("/")[-1].split("?")[0]
 
     try:
         response: requests.Response = requests.get(
