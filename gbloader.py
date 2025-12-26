@@ -35,7 +35,6 @@ def getData(url: str) -> Optional[modData]:
         submitter: dict[str, Any] = data.get("_aSubmitter", {})
         filesarray: List[dict[str, Any]] = data.get("_aFiles", [])
 
-        # Extract only the base filename from the GameBanana file objects
         filenamesarray: list[str] = [file["_sFile"] for file in filesarray]
 
         if images:
@@ -57,11 +56,6 @@ def getData(url: str) -> Optional[modData]:
         return None
 
 
-def find_mod_folders() -> List[pathlib.Path]:
-    """Finds all directories containing a .JASM_ModConfig.json file."""
-    return [p.parent for p in pathlib.Path(".").rglob(".JASM_ModConfig.json")]
-
-
 def main() -> None:
     try:
         with open("load.txt", "r") as f:
@@ -71,7 +65,6 @@ def main() -> None:
         print("File load.txt not found.")
         return
 
-    # Map folder names to their Path objects for quick lookup
     all_folders_map = {f.name: f for f in pathlib.Path(".").iterdir() if f.is_dir()}
 
     for url in urls:
@@ -94,7 +87,7 @@ def main() -> None:
             config_path = target_folder / ".JASM_ModConfig.json"
             img_path = target_folder / ".JASM_Cover.jpg"
 
-            # 1. Update/Create JSON config
+            # 1. update/create json config
             try:
                 config_data: dict[str, Any] = {}
                 if config_path.exists():
