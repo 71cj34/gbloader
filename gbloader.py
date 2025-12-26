@@ -35,6 +35,7 @@ def getData(url: str) -> Optional[modData]:
         submitter: dict[str, Any] = data.get("_aSubmitter", {})
         filesarray: List[dict[str, Any]] = data.get("_aFiles", [])
 
+        # Extract only the base filename from the GameBanana file objects
         filenamesarray: list[str] = [file["_sFile"] for file in filesarray]
 
         if images:
@@ -70,10 +71,7 @@ def main() -> None:
         print("File load.txt not found.")
         return
 
-    # Deep scan for any folder containing the config file
-    existing_mod_folders = find_mod_folders()
-
-    # Map folder names for quick lookup as a fallback
+    # Map folder names to their Path objects for quick lookup
     all_folders_map = {f.name: f for f in pathlib.Path(".").iterdir() if f.is_dir()}
 
     for url in urls:
@@ -81,25 +79,30 @@ def main() -> None:
         if not mod_item:
             continue
 
-        target_folder: Optional[pathlib.Path] = None
-        if not target_folder:
-            for fname in mod_item.filenames:
-                if fname in all_folders_map:
-                    target_folder = all_folders_map[fname]
-                    break
+        matching_folders: list[pathlib.Path] = []
+        for fname in mod_item.filenames:
+            if fname in all_folders_map:
+                matching_folders.append(all_folders_map[fname])
 
-        if target_folder:
-            print(f"Target found: {mod_item.modname} -> {target_folder.resolve()}")
+        if not matching_folders:
+            print(f"No local match found for {mod_item.modname} ({mod_item.id})")
+            continue
+
+        for target_folder in matching_folders:
+            print(f"Updating: {mod_item.modname} -> {target_folder.resolve()}")
 
             config_path = target_folder / ".JASM_ModConfig.json"
             img_path = target_folder / ".JASM_Cover.jpg"
 
-            # 1. update json config
+            # 1. Update/Create JSON config
             try:
-                config_data = {}
+                config_data: dict[str, Any] = {}
                 if config_path.exists():
                     with open(config_path, "r", encoding="utf-8") as f:
-                        config_data = json.load(f)
+                        try:
+                            config_data = json.load(f)
+                        except json.JSONDecodeError:
+                            config_data = {}
 
                 config_data["CustomName"] = mod_item.modname
                 config_data["Author"] = mod_item.subname
@@ -111,7 +114,7 @@ def main() -> None:
             except Exception as e:
                 print(f"Failed to update config in {target_folder}: {e}")
 
-            # 2. add image
+            # 2. add/download image
             if not img_path.exists():
                 try:
                     img_res = requests.get(mod_item.photourl, stream=True, timeout=15)
@@ -122,8 +125,6 @@ def main() -> None:
                     print(f"Image saved to: {img_path}")
                 except Exception as e:
                     print(f"Failed to download image: {e}")
-        else:
-            print(f"No local match found for {mod_item.modname} ({mod_item.id})")
 
 
 if __name__ == "__main__":
